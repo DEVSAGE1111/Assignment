@@ -17,9 +17,8 @@ RUN apt-get update && apt-get install -y \
 
 # 2. Enable Apache mod_rewrite and configure prefork MPM
 RUN a2enmod rewrite
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf
-RUN rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf
-RUN a2enmod mpm_prefork || true
+RUN rm -f /etc/apache2/mods-enabled/mpm_*
+RUN a2enmod mpm_prefork
 
 # 3. Configure Apache DocumentRoot to point to /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -44,5 +43,5 @@ ENV PORT=80
 RUN sed -i 's/Listen 80/Listen ${PORT}/g' /etc/apache2/ports.conf
 RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/g' /etc/apache2/sites-available/*.conf
 
-# 8. Run migrations, seeders, and start Apache web server
-CMD ["sh", "-c", "php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; apache2-foreground"]
+# 8. Run migrations, seeders, list modules, and start Apache web server
+CMD ["sh", "-c", "php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; ls -la /etc/apache2/mods-enabled/; apache2-foreground"]
