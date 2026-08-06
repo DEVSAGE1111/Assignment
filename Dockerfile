@@ -17,9 +17,9 @@ RUN apt-get update && apt-get install -y \
 
 # 2. Enable Apache mod_rewrite and configure prefork MPM
 RUN a2enmod rewrite
-RUN a2dismod mpm_event || true
-RUN a2dismod mpm_worker || true
-RUN a2enmod mpm_prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf
+RUN rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf
+RUN a2enmod mpm_prefork || true
 
 # 3. Configure Apache DocumentRoot to point to /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
