@@ -23,35 +23,21 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 4. Copy project files
+# 4. Copy project files (this includes public/build assets committed to Git)
 WORKDIR /var/www/html
 COPY . .
 
-# 5. Install Composer
+# 5. Install Composer dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# 6. Install Node.js and build assets
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install \
-    && npm run build
-
-# 7. Set directory permissions for Laravel
+# 6. Set directory permissions for Laravel
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# 8. Create a startup script to run migrations and seeders, then start Apache
-RUN echo '#!/bin/sh\n\
-php artisan migrate --force\n\
-php artisan db:seed --force\n\
-apache2-foreground\n\
-' > /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# 9. Expose port 80 (or Render's default port via env PORT)
+# 7. Expose port 80
 EXPOSE 80
 
-# 10. Start using our custom entrypoint script
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# 8. Run migrations, seeders, and start Apache web server
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && apache2-foreground"]
