@@ -36,8 +36,10 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# 7. Expose port 80
-EXPOSE 80
+# 7. Configure Apache to listen on dynamic port env (default 80 if not set)
+ENV PORT=80
+RUN sed -i 's/Listen 80/Listen ${PORT}/g' /etc/apache2/ports.conf
+RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/g' /etc/apache2/sites-available/*.conf
 
 # 8. Run migrations, seeders, and start Apache web server
-CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && apache2-foreground"]
+CMD ["sh", "-c", "php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; apache2-foreground"]
