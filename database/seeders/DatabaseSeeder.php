@@ -20,10 +20,11 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        User::factory()->create([
+        User::create([
             'name' => 'Administrator',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
+            'email_verified_at' => now(),
         ]);
 
         $contactForm = Form::create([
