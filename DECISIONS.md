@@ -10,7 +10,7 @@ This document outlines the key engineering decisions, structural designs, and ar
 ### Rationale:
 - **Flexibility**: Traditional database setups might create a new database table for each form. While this is highly structured, it requires running dynamic migrations in production, altering databases on-the-fly, and managing hundreds of tables, which does not scale well in multi-tenant environments.
 - **Relational Integrity**: By using JSON columns, we keep our database schema fixed with just two main tables (`forms` and `submissions`).
-- **Query Performance**: Modern MySQL (and SQLite) natively supports indexing and querying JSON values, meaning search and retrieval operations are extremely fast.
+- **Query Performance**: Modern MySQL natively supports indexing and querying JSON values, meaning search and retrieval operations are extremely fast.
 - **Scalability**: Submissions are tied directly to form records through clean, indexed foreign keys, ensuring fast cascades and clean database garbage collection.
 
 ---
@@ -26,27 +26,28 @@ This document outlines the key engineering decisions, structural designs, and ar
 
 ---
 
-## 3. Smart Mock AI Fallback Mode
-**Decision**: Design a dual-mode AI Generation Service (`AiFormGenerator`) that automatically detects API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`) and falls back to a smart, keyword-based mock generator if neither is configured.
+## 3. Database-Backed AI settings registry
+**Decision**: Store all credential profiles (Gemini, OpenAI, xAI/Grok, Ollama) and active model configurations in a database table (`ai_settings` table) under a dynamic JSON column instead of standard `.env` configuration keys.
 
 ### Rationale:
-- **Frictionless Onboarding**: Assessment reviewers should be able to run `php artisan migrate --seed` and immediately test prompt-based generation without registering for cloud services or exposing their personal API keys.
-- **High-Fidelity Mocks**: The mock engine analyzes user prompts for keywords like "feedback", "contact", "registration", or "newsletter" to return custom, highly relevant, and realistic form layouts instead of generic placeholder text.
+- **Runtime Adaptability**: Users can edit keys, toggle provider accounts, and configure customized models on-the-fly directly inside the settings dashboard without rewriting host `.env` files or restarting production web-servers.
+- **Advanced Connectivity Testers**: Built connection validators checking API tokens against provider endpoints before saving, preventing runtime errors.
+- **Dynamic Model Lists**: Integrated provider lookup queries (such as retrieving active models list from Ollama or Google Language API) dynamically to populate dropdown lists.
 
 ---
 
-## 4. API Security: Custom Token Header Middleware
-**Decision**: Secure REST APIs using custom header-matching middleware (`VerifyApiToken`) checking for `X-API-Key`.
+## 4. Secure Route Authentication Wall
+**Decision**: Implement a session-based login wall using a dedicated, high-fidelity Livewire login module (`/login`) and secure all admin routes using standard route middleware groups.
 
 ### Rationale:
-- **Lightweight Access**: Since forms retrieve submission tables programmatically, developers need a simple token header verification to ingest data into CRMs or BI tools.
-- **Reduced Complexity**: Using Laravel Sanctum or Passport for machine-to-machine form ingestion would introduce heavy session tables and bearer token lookup overhead. A simple header check is secure, fast, and easy to configure via `.env`.
+- **Global Protection**: Wrapped dashboard, form generator interfaces, api document viewers, and configuration panels in the `auth` middleware, redirecting guests to the login screen automatically.
+- **Exempt Public Viewers**: Excluded the dynamc form render route (`/forms/{uuid}`) from the auth group, allowing clients and guest visitors to fill out and submit responses securely without registration.
 
 ---
 
-## 5. Livewire 4 Class-Based Architecture
-**Decision**: Utilize Class-based Livewire components (`app/Livewire/`) rather than Single File Components (SFC) for main app screens.
+## 5. Modern Designer Light Slate Aesthetic
+**Decision**: Design a clean, minimal light-mode developer theme (Slate-50 / Slate-900 contrast) inspired by modern products like Stripe and Vercel.
 
 ### Rationale:
-- **Separation of Concerns**: Main dashboard screens, form builder logic, and submissions lists manage complex processing (API calls, file uploads, file parsing, dynamic validation arrays). Keeping the PHP code in dedicated classes separate from Blade markup ensures the codebase remains readable, modular, and easy to read.
-- **Testability**: Class-based structures integrate perfectly with Laravel's feature testing tools and allow unit tests to mock and assert component states cleanly.
+- **Human-Crafted Feel**: Removed abstract purple gradient glows and floating AI indicators that look like generic templates. Instead, we introduce sharp 8px border-radius containers, solid dark buttons, bordered gray tags, and a low-opacity slate-200 dotted grid background.
+- **Maximum Accessibility**: Monospaced tags, Outfit typography, and high-contrast tables improve readability and look like a premium corporate internal dashboard.

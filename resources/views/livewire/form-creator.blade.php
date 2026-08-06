@@ -172,6 +172,19 @@
                         Download CSV Template
                     </a>
                 </div>
+
+                <div class="rounded-2xl border border-slate-900 bg-slate-950/40 p-6 backdrop-blur-md">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Word Guidelines</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                        To generate fields from a Word document (.docx), upload a questionnaire outline or brief prompt. The AI parser will automatically generate structured fields based on the document text.
+                    </p>
+                    <a href="/downloads/sample_form_prompt.docx" class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/60 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-850 hover:text-white transition-colors" download>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Word Sample
+                    </a>
+                </div>
             </div>
         </div>
     @endif

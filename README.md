@@ -7,7 +7,7 @@ Formify AI is a premium, high-fidelity AI-powered form builder application built
 ## ⚡ Features
 
 ### 1. Multi-Mode Form Creator
-- **Manual Drag-and-Drop Builder**: Interactively add, delete, and reorder fields (text, number, email, select, radio, checkbox, textarea).
+- **Manual Drag-and-Drop Builder**: Interactively add, delete, customize, and reorder fields (text, number, email, select, radio, checkbox, textarea).
 - **AI-Powered Form Generation**: Enter a natural language prompt (e.g., "Create a job recruitment form"), and let AI generate the form structure, titles, descriptions, and validations dynamically.
 - **Document Schema Import**: Upload an Excel (.xlsx) or CSV (.csv) file outlining your questions, types, and placeholders to generate forms in bulk instantly.
 - **AI Document Context Import**: Upload a Word (.docx) file containing arbitrary text or questions, and let AI analyze the document to build a structured questionnaire automatically.
@@ -24,6 +24,21 @@ Formify AI is a premium, high-fidelity AI-powered form builder application built
 - **POST `/api/forms/{uuid}/submit`**: Post validated responses from external frontends.
 - **GET `/api/forms/{uuid}/submissions`**: Retrieve submissions securely. Protected via API keys (`X-API-Key` headers).
 - **Interactive Developer Guide**: Built-in documentation `/api-docs` displaying integration examples for Guzzle PHP, JavaScript, and cURL.
+
+### 4. Dynamic AI Settings Configuration (Database-Backed)
+- **Settings Panel `/ai-settings`**: Configure API credentials and active models for Google Gemini, OpenAI, xAI (Grok), and Ollama dynamically through the UI.
+- **Live Connection Pinger**: Click "Test Connection" to ping credentials against provider endpoints in real-time.
+- **Dynamic Model Fetcher**: Automatically retrieve available models directly from provider endpoints (e.g., fetching available container models from Ollama or `gemini-*` parameters from Google).
+
+---
+
+## 🔒 Security & Authentication
+
+All administrative pages, creators, submission analytics, and settings are fully protected behind a global login wall. 
+*   **Login Route**: `/login`
+*   **Default Seeded Admin Credentials**:
+    *   **Email**: `admin@example.com`
+    *   **Password**: `password`
 
 ---
 
@@ -51,18 +66,13 @@ npm install
    DB_USERNAME=root
    DB_PASSWORD=
    ```
-3. Set your **AI API Keys** and **REST Token** in `.env`:
+3. Set your **Secure REST API Token** in `.env`:
    ```env
-   # API Keys (Provide at least one to enable real AI generation; leaves empty for Mock AI fallback)
-   GEMINI_API_KEY=your_gemini_api_key_here
-   OPENAI_API_KEY=your_openai_api_key_here
-
-   # Secure REST API Token
    API_SECRET_TOKEN=formify_secret_token_12345
    ```
 
 ### 3. Build & Run Application
-1. Run migrations and database seeders:
+1. Run migrations and database seeders (this automatically creates the Admin user and initial settings profile):
    ```bash
    php artisan migrate:fresh --seed
    ```
@@ -80,7 +90,7 @@ npm install
 
 ## 🧪 Testing
 
-The project uses the **Pest PHP** testing framework. To verify endpoints, models, validations, and AI services, run:
+The project uses the **Pest PHP** testing framework. To verify endpoints, models, validations, redirects, and AI services, run:
 ```bash
 php artisan test
 ```
@@ -91,3 +101,4 @@ php artisan test
 We provide downloadable templates inside the application to make testing seamless:
 - **Form Structure Import**: Download [`public/downloads/form_template.csv`](file:///c:/xampp/htdocs/asg/assg/public/downloads/form_template.csv) to preview the import structure.
 - **Form Response Bulk Import**: Download [`public/downloads/response_import_sample.csv`](file:///c:/xampp/htdocs/asg/assg/public/downloads/response_import_sample.csv) to preview the bulk submissions structure.
+- **Word Prompt Import**: Download [`public/downloads/sample_form_prompt.docx`](file:///c:/xampp/htdocs/asg/assg/public/downloads/sample_form_prompt.docx) to preview the Word document AI prompt parsing.
