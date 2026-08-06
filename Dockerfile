@@ -34,14 +34,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # 6. Set directory permissions for Laravel
+RUN touch database/database.sqlite
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
 # 7. Configure Apache to listen on dynamic port env (default 8000 if not set)
 ENV PORT=8000
+ENV APP_KEY=base64:Yqdk4Kt49z6oh6BPQ1WwRKyAuRvsyfs1XKp5HWNVic8=
 RUN sed -i 's/Listen 80/Listen ${PORT}/g' /etc/apache2/ports.conf
 RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/g' /etc/apache2/sites-available/*.conf
 
 # 8. Run migrations, seeders, and start Apache web server with correct MPM and port config
-CMD ["sh", "-c", "sed -i \"s/Listen .*/Listen $PORT/g\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:.*/<VirtualHost *:$PORT>/g\" /etc/apache2/sites-available/*.conf && a2dismod mpm_event mpm_worker || true; a2enmod mpm_prefork || true; php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; apache2-foreground"]
+CMD ["sh", "-c", "sed -i \"s/Listen .*/Listen $PORT/g\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:.*/<VirtualHost *:$PORT>/g\" /etc/apache2/sites-available/*.conf && a2dismod mpm_event mpm_worker || true; a2enmod mpm_prefork || true; php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true; apache2-foreground"]
