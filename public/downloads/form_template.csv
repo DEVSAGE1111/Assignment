@@ -1,0 +1,6 @@
+Label,Type,Required,Placeholder,Options
+Full Name,text,true,Enter your full name,
+Email Address,email,true,Enter your email address,
+Role,select,true,Select your role,"Admin,Manager,Employee"
+Age,number,false,Enter your age,
+Subscribe to newsletter,checkbox,false,Subscribe to newsletter,
