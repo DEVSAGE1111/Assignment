@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql mbstring zip xml bcmath
 
-# 2. Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# 2. Enable Apache mod_rewrite and disable conflicting MPM modules
+RUN a2enmod rewrite && (a2dismod mpm_event mpm_worker || true)
 
 # 3. Configure Apache DocumentRoot to point to /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
