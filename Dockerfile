@@ -50,13 +50,17 @@ RUN cat << 'EOF' > /usr/local/bin/docker-entrypoint.sh
 #!/bin/sh
 set -e
 
-# Write dynamic port config directly to Apache
-echo "Listen $PORT" > /etc/apache2/ports.conf
+# Write multi-port configuration to ports.conf to handle any Railway target port
+echo "Listen 8000" > /etc/apache2/ports.conf
+echo "Listen 8080" >> /etc/apache2/ports.conf
+if [ ! -z "$PORT" ] && [ "$PORT" != "8000" ] && [ "$PORT" != "8080" ]; then
+    echo "Listen $PORT" >> /etc/apache2/ports.conf
+fi
 
-# Replace VirtualHost port in sites configuration
+# Configure VirtualHost to handle incoming requests on any port
 if [ -f /etc/apache2/sites-available/000-default.conf ]; then
-    sed -i "s/<VirtualHost [*]:[0-9]*>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/*.conf
-    sed -i "s/<VirtualHost [*]:\${PORT}>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/*.conf
+    sed -i "s/<VirtualHost \*:[0-9]*>/<VirtualHost *:*>/g" /etc/apache2/sites-available/*.conf
+    sed -i "s/<VirtualHost \*:\${PORT}>/<VirtualHost *:*>/g" /etc/apache2/sites-available/*.conf
 fi
 
 # Print configurations to stdout for debugging
@@ -69,14 +73,14 @@ cat /etc/apache2/sites-available/000-default.conf
 php artisan migrate --force || echo "Migrations failed, continuing..."
 php artisan db:seed --force || echo "Seeding failed, continuing..."
 
-# Correct directory permissions for Laravel
+# Correct directory permissions for Laravel SQLite database and cache
 chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true
 
-# Configure MPM
+# Configure Apache MPM modules
 a2dismod mpm_event mpm_worker || true
 a2enmod mpm_prefork || true
 
-# Run Apache foreground
+# Run Apache in foreground
 exec apache2-foreground
 EOF
 
