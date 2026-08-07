@@ -27,6 +27,13 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        User::create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+
         $contactForm = Form::create([
             'title' => 'Contact Us',
             'description' => 'Get in touch with our team for support or inquiries.',
