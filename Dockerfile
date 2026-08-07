@@ -22,9 +22,10 @@ RUN a2enmod mpm_prefork
 
 # 3. Configure Apache DocumentRoot to point to /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -i 's!DocumentRoot /var/www/html!DocumentRoot /var/www/html/public!g' /etc/apache2/sites-available/*.conf
+RUN sed -i 's!<Directory /var/www/html/>!<Directory /var/www/html/public/>!g' /etc/apache2/apache2.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 
 # 4. Copy project files (this includes public/build assets committed to Git)
 WORKDIR /var/www/html
