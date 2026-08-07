@@ -40,11 +40,46 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# 7. Configure Apache to listen on dynamic port env (default 8000 if not set)
+# 7. Configure port and key defaults
 ENV PORT=8000
 ENV APP_KEY=base64:Yqdk4Kt49z6oh6BPQ1WwRKyAuRvsyfs1XKp5HWNVic8=
 
+# 8. Create a clean entrypoint script and set it
+RUN cat << 'EOF' > /usr/local/bin/docker-entrypoint.sh
+#!/bin/sh
+set -e
 
-# 8. Run migrations, seeders, and start Apache web server with correct MPM and port config
-CMD ["sh", "-c", "echo \"Listen $PORT\" > /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:80>/<VirtualHost *:$PORT>/g\" /etc/apache2/sites-available/*.conf && echo '=== PORTS.CONF ===' && cat /etc/apache2/ports.conf && echo '=== 000-DEFAULT.CONF ===' && cat /etc/apache2/sites-available/000-default.conf && a2dismod mpm_event mpm_worker || true; a2enmod mpm_prefork || true; php artisan migrate --force || echo 'Migrations failed, continuing...'; php artisan db:seed --force || echo 'Seeding failed, continuing...'; chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true; apache2-foreground"]
+# Write dynamic port config directly to Apache
+echo "Listen $PORT" > /etc/apache2/ports.conf
+
+# Replace VirtualHost port in sites configuration
+if [ -f /etc/apache2/sites-available/000-default.conf ]; then
+    sed -i "s/<VirtualHost [*]:[0-9]*>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/*.conf
+    sed -i "s/<VirtualHost [*]:\${PORT}>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/*.conf
+fi
+
+# Print configurations to stdout for debugging
+echo "=== PORTS.CONF ==="
+cat /etc/apache2/ports.conf
+echo "=== 000-DEFAULT.CONF ==="
+cat /etc/apache2/sites-available/000-default.conf
+
+# Run database migrations and seeding
+php artisan migrate --force || echo "Migrations failed, continuing..."
+php artisan db:seed --force || echo "Seeding failed, continuing..."
+
+# Correct directory permissions for Laravel
+chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true
+
+# Configure MPM
+a2dismod mpm_event mpm_worker || true
+a2enmod mpm_prefork || true
+
+# Run Apache foreground
+exec apache2-foreground
+EOF
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+
 
