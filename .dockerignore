@@ -1,0 +1,15 @@
+node_modules
+vendor
+.git
+.github
+.env
+*.sqlite
+.phpunit.cache
+tests
+.agents
+.ai
+AGENTS.md
+DECISIONS.md
+walkthrough.md
+task.md
+implementation_plan.md
